@@ -282,7 +282,7 @@ const ModuleFive = () => {
                         <div className="text-sm text-green-700">Calidad de llamadas</div>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">< 50ms</div>
+                        <div className="text-2xl font-bold text-blue-600">&lt; 50ms</div>
                         <div className="text-sm text-blue-700">Latencia promedio</div>
                       </div>
                       <div className="text-center p-4 bg-purple-50 rounded-lg">
