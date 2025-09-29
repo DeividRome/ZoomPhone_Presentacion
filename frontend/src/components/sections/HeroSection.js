@@ -38,7 +38,7 @@ const HeroSection = () => {
               Como tener una centralita física transformada en un servicio inteligente en la nube.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+            /*<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-[#50E4FE] to-[#043172] text-white hover:shadow-xl transition-all duration-300 px-8 py-3"
@@ -55,7 +55,7 @@ const HeroSection = () => {
               >
                 Calcular ROI
               </Button>
-            </div>
+            </div>*/
             
             {/* Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
