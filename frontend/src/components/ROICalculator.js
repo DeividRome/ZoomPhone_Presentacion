@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
+
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { 
@@ -22,6 +25,26 @@ const ROICalculator = ({ isOpen, onClose }) => {
   const [inputs, setInputs] = useState(roiCalculatorDefaults);
   const [results, setResults] = useState(null);
   const [activeTab, setActiveTab] = useState('inputs');
+
+  // === NUEVO: referencia al bloque que se imprimirá ===
+  const reportRef = useRef(null);
+
+  // === NUEVO: handler de impresión con estilos de página ===
+  const handlePrint = useReactToPrint({
+    content: () => reportRef.current,
+    documentTitle: `ROI_ZoomPhone_${new Date().toISOString().slice(0,10)}`,
+    // Estilos solo para impresión (evitar recortes del modal y conservar colores)
+    pageStyle: `
+      @page { size: A4; margin: 12mm; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .max-h-[90vh] { max-height: none !important; overflow: visible !important; }
+        .print-no-shadow { box-shadow: none !important; }
+        /* Opcional: evitar cortes en medio de tarjetas/listas */
+        .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+      }
+    `
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -189,7 +212,7 @@ const ROICalculator = ({ isOpen, onClose }) => {
               <div className="space-y-6">
                 {/* Key Metrics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                  <Card className="text-center bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 print-no-shadow avoid-break">
                     <CardContent className="p-6">
                       <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-3" />
                       <h3 className="text-2xl font-bold text-green-700 mb-1">
@@ -199,7 +222,7 @@ const ROICalculator = ({ isOpen, onClose }) => {
                     </CardContent>
                   </Card>
                   
-                  <Card className="text-center bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
+                  <Card className="text-center bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 print-no-shadow avoid-break">
                     <CardContent className="p-6">
                       <Calculator className="h-8 w-8 text-blue-600 mx-auto mb-3" />
                       <h3 className="text-2xl font-bold text-blue-700 mb-1">
@@ -209,7 +232,7 @@ const ROICalculator = ({ isOpen, onClose }) => {
                     </CardContent>
                   </Card>
                   
-                  <Card className="text-center bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+                  <Card className="text-center bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 print-no-shadow avoid-break">
                     <CardContent className="p-6">
                       <DollarSign className="h-8 w-8 text-purple-600 mx-auto mb-3" />
                       <h3 className="text-2xl font-bold text-purple-700 mb-1">
@@ -222,7 +245,7 @@ const ROICalculator = ({ isOpen, onClose }) => {
 
                 {/* Detailed Breakdown */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
+                  <Card className="print-no-shadow avoid-break">
                     <CardHeader>
                       <CardTitle className="text-[#043172]">Costos Actuales vs. Zoom Phone</CardTitle>
                     </CardHeader>
@@ -244,7 +267,7 @@ const ROICalculator = ({ isOpen, onClose }) => {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="print-no-shadow avoid-break">
                     <CardHeader>
                       <CardTitle className="text-[#043172]">Beneficios Adicionales</CardTitle>
                     </CardHeader>
@@ -272,78 +295,86 @@ const ROICalculator = ({ isOpen, onClose }) => {
 
           {/* Summary Tab */}
           <TabsContent value="summary" className="mt-6">
-            <Card className="border-l-4 border-[#50E4FE]">
-              <CardHeader>
-                <CardTitle className="text-[#043172]">Resumen Ejecutivo</CardTitle>
-                <CardDescription>
-                  Análisis ROI para {inputs.employees} empleados
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {results && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-[#043172] flex items-center">
-                          <TrendingUp className="h-4 w-4 mr-2" />
-                          Beneficios Financieros
-                        </h4>
-                        <ul className="space-y-2 text-sm">
-                          <li className="flex justify-between">
-                            <span>Ahorro anual en telefonía:</span>
-                            <span className="font-semibold text-green-600">{formatCurrency(results.annualSavings)}</span>
-                          </li>
-                          <li className="flex justify-between">
-                            <span>Retorno de inversión (3 años):</span>
-                            <span className="font-semibold text-blue-600">{results.roiPercentage.toFixed(0)}%</span>
-                          </li>
-                          <li className="flex justify-between">
-                            <span>Tiempo de recuperación:</span>
-                            <span className="font-semibold text-purple-600">{results.paybackMonths.toFixed(0)} meses</span>
-                          </li>
-                        </ul>
+            {/* === NUEVO: envuelve SOLO el resumen con el ref === */}
+            <div ref={reportRef} id="reporte-resumen">
+              <Card className="border-l-4 border-[#50E4FE] print-no-shadow">
+                <CardHeader>
+                  <CardTitle className="text-[#043172]">Resumen Ejecutivo</CardTitle>
+                  <CardDescription>
+                    Análisis ROI para {inputs.employees} empleados
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {results && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 avoid-break">
+                          <h4 className="font-semibold text-[#043172] flex items-center">
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Beneficios Financieros
+                          </h4>
+                          <ul className="space-y-2 text-sm">
+                            <li className="flex justify-between">
+                              <span>Ahorro anual en telefonía:</span>
+                              <span className="font-semibold text-green-600">{formatCurrency(results.annualSavings)}</span>
+                            </li>
+                            <li className="flex justify-between">
+                              <span>Retorno de inversión (3 años):</span>
+                              <span className="font-semibold text-blue-600">{results.roiPercentage.toFixed(0)}%</span>
+                            </li>
+                            <li className="flex justify-between">
+                              <span>Tiempo de recuperación:</span>
+                              <span className="font-semibold text-purple-600">{results.paybackMonths.toFixed(0)} meses</span>
+                            </li>
+                          </ul>
+                        </div>
+                        
+                        <div className="space-y-4 avoid-break">
+                          <h4 className="font-semibold text-[#043172] flex items-center">
+                            <Users className="h-4 w-4 mr-2" />
+                            Beneficios Operacionales
+                          </h4>
+                          <ul className="space-y-2 text-sm text-slate-600">
+                            <li>• Reducción 70% en soporte IT telefónico</li>
+                            <li>• Eliminación de hardware legacy</li>
+                            <li>• Escalabilidad instantánea</li>
+                            <li>• Movilidad completa para empleados</li>
+                            <li>• Integración con herramientas existentes</li>
+                          </ul>
+                        </div>
                       </div>
                       
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-[#043172] flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
-                          Beneficios Operacionales
-                        </h4>
-                        <ul className="space-y-2 text-sm text-slate-600">
-                          <li>• Reducción 70% en soporte IT telefónico</li>
-                          <li>• Eliminación de hardware legacy</li>
-                          <li>• Escalabilidad instantánea</li>
-                          <li>• Movilidad completa para empleados</li>
-                          <li>• Integración con herramientas existentes</li>
-                        </ul>
+                      <div className="p-4 bg-gradient-to-r from-[#50E4FE]/5 to-[#043172]/5 rounded-lg avoid-break">
+                        <h4 className="font-semibold text-[#043172] mb-2">Recomendación</h4>
+                        <p className="text-sm text-slate-700">
+                          Basado en su configuración actual, Zoom Phone ofrecería un ROI excepcional 
+                          de <strong>{results.roiPercentage.toFixed(0)}%</strong> en 3 años, con un tiempo de recuperación 
+                          de solo <strong>{results.paybackMonths.toFixed(0)} meses</strong>. 
+                          Los ahorros anuales de <strong>{formatCurrency(results.totalROI)}</strong> 
+                          justifican plenamente la inversión.
+                        </p>
                       </div>
                     </div>
-                    
-                    <div className="p-4 bg-gradient-to-r from-[#50E4FE]/5 to-[#043172]/5 rounded-lg">
-                      <h4 className="font-semibold text-[#043172] mb-2">Recomendación</h4>
-                      <p className="text-sm text-slate-700">
-                        Basado en su configuración actual, Zoom Phone ofrecería un ROI excepcional 
-                        de <strong>{results.roiPercentage.toFixed(0)}%</strong> en 3 años, con un tiempo de recuperación 
-                        de solo <strong>{results.paybackMonths.toFixed(0)} meses</strong>. 
-                        Los ahorros anuales de <strong>{formatCurrency(results.totalROI)}</strong> 
-                        justifican plenamente la inversión.
-                      </p>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                      <Button className="bg-gradient-to-r from-[#50E4FE] to-[#043172] text-white">
-                        <Download className="h-4 w-4 mr-2" />
-                        Descargar Reporte
-                      </Button>
-                      <Button variant="outline" className="border-[#043172] text-[#043172]">
-                        <Mail className="h-4 w-4 mr-2" />
-                        Enviar por Email
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Botones (fuera del ref para que no salgan en el PDF si no quieres) */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button
+                type="button"
+                onClick={handlePrint}
+                className="bg-gradient-to-r from-[#50E4FE] to-[#043172] text-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Descargar Reporte
+              </Button>
+              <Button variant="outline" className="border-[#043172] text-[#043172]">
+                <Mail className="h-4 w-4 mr-2" />
+                Enviar por Email
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
 
