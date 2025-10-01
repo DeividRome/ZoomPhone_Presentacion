@@ -203,7 +203,7 @@ const ModuleFour = () => {
                             </div>
                             <p className="text-sm font-medium text-slate-700">{step}</p>
                             {stepIndex < feature.flow.length - 1 && (
-                              <ArrowDown className="h-4 w-4 text-[#50E4FE] mx-auto mt-2 transform md:rotate-90" />
+                              <ArrowDown className="h-4 w-4 text-[#50E4FE] mx-auto mt-2 transform md:-rotate-90" />
                             )}
                           </div>
                         ))}
