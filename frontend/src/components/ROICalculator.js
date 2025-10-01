@@ -370,10 +370,10 @@ const ROICalculator = ({ isOpen, onClose }) => {
                 <Download className="h-4 w-4 mr-2" />
                 Descargar Reporte
               </Button>
-              <Button variant="outline" className="border-[#043172] text-[#043172]">
+              /*<Button variant="outline" className="border-[#043172] text-[#043172]">
                 <Mail className="h-4 w-4 mr-2" />
                 Enviar por Email
-              </Button>
+              </Button>*/
             </div>
           </TabsContent>
         </Tabs>
